@@ -38,20 +38,15 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.logging.java.JavaLoggingSystem;
-import org.springframework.boot.test.EnvironmentTestUtils;
-import org.springframework.boot.test.OutputCapture;
+import org.springframework.boot.testutil.EnvironmentTestUtils;
+import org.springframework.boot.testutil.OutputCapture;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link LoggingApplicationListener}.
@@ -126,7 +121,7 @@ public class LoggingApplicationListenerTests {
 		this.outputCapture.expect(not(containsString("???")));
 		this.outputCapture.expect(containsString("[junit-"));
 		this.logger.info("Hello world", new RuntimeException("Expected"));
-		assertFalse(new File(tmpDir() + "/spring.log").exists());
+		assertThat(new File(tmpDir() + "/spring.log").exists()).isFalse();
 	}
 
 	@Test
@@ -137,11 +132,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.info("Hello world");
 		String output = this.outputCapture.toString().trim();
-		assertTrue("Wrong output:\n" + output, output.contains("Hello world"));
-		assertFalse("Wrong output:\n" + output, output.contains("???"));
-		assertTrue("Wrong output:\n" + output,
-				output.startsWith("LOG_FILE_IS_UNDEFINED"));
-		assertTrue("Wrong output:\n" + output, output.endsWith("BOOTBOOT"));
+		assertThat(output).contains("Hello world").doesNotContain("???")
+				.startsWith("LOG_FILE_IS_UNDEFINED").endsWith("BOOTBOOT");
 	}
 
 	@Test
@@ -163,9 +155,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.info("Hello world");
 		String output = this.outputCapture.toString().trim();
-		assertTrue("Wrong output:\n" + output, output.contains("Hello world"));
-		assertFalse("Wrong output:\n" + output, output.contains("???"));
-		assertFalse(new File(tmpDir() + "/spring.log").exists());
+		assertThat(output).contains("Hello world").doesNotContain("???");
+		assertThat(new File(tmpDir() + "/spring.log").exists()).isFalse();
 	}
 
 	@Test
@@ -190,18 +181,18 @@ public class LoggingApplicationListenerTests {
 		Log logger = LogFactory.getLog(LoggingApplicationListenerTests.class);
 		logger.info("Hello world");
 		String output = this.outputCapture.toString().trim();
-		assertTrue("Wrong output:\n" + output, output.startsWith("target/foo.log"));
+		assertThat(output).startsWith("target/foo.log");
 	}
 
 	@Test
 	public void addLogFilePropertyWithDefault() {
-		assertFalse(new File("target/foo.log").exists());
+		assertThat(new File("target/foo.log").exists()).isFalse();
 		EnvironmentTestUtils.addEnvironment(this.context, "logging.file: target/foo.log");
 		this.initializer.initialize(this.context.getEnvironment(),
 				this.context.getClassLoader());
 		Log logger = LogFactory.getLog(LoggingApplicationListenerTests.class);
 		logger.info("Hello world");
-		assertTrue(new File("target/foo.log").exists());
+		assertThat(new File("target/foo.log").exists()).isTrue();
 	}
 
 	@Test
@@ -214,8 +205,7 @@ public class LoggingApplicationListenerTests {
 		Log logger = LogFactory.getLog(LoggingApplicationListenerTests.class);
 		logger.info("Hello world");
 		String output = this.outputCapture.toString().trim();
-		assertTrue("Wrong output:\n" + output,
-				output.startsWith("target/foo/spring.log"));
+		assertThat(output).startsWith("target/foo/spring.log");
 	}
 
 	@Test
@@ -225,8 +215,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.trace("testattrace");
-		assertThat(this.outputCapture.toString(), containsString("testatdebug"));
-		assertThat(this.outputCapture.toString(), not(containsString("testattrace")));
+		assertThat(this.outputCapture.toString()).contains("testatdebug");
+		assertThat(this.outputCapture.toString()).doesNotContain("testattrace");
 	}
 
 	@Test
@@ -236,8 +226,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.trace("testattrace");
-		assertThat(this.outputCapture.toString(), containsString("testatdebug"));
-		assertThat(this.outputCapture.toString(), containsString("testattrace"));
+		assertThat(this.outputCapture.toString()).contains("testatdebug");
+		assertThat(this.outputCapture.toString()).contains("testattrace");
 	}
 
 	@Test
@@ -248,8 +238,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.trace("testattrace");
-		assertThat(this.outputCapture.toString(), containsString("testatdebug"));
-		assertThat(this.outputCapture.toString(), containsString("testattrace"));
+		assertThat(this.outputCapture.toString()).contains("testatdebug");
+		assertThat(this.outputCapture.toString()).contains("testattrace");
 	}
 
 	@Test
@@ -260,8 +250,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.trace("testattrace");
-		assertThat(this.outputCapture.toString(), containsString("testatdebug"));
-		assertThat(this.outputCapture.toString(), containsString("testattrace"));
+		assertThat(this.outputCapture.toString()).contains("testatdebug");
+		assertThat(this.outputCapture.toString()).contains("testattrace");
 	}
 
 	@Test
@@ -272,8 +262,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.trace("testattrace");
-		assertThat(this.outputCapture.toString(), containsString("testatdebug"));
-		assertThat(this.outputCapture.toString(), containsString("testattrace"));
+		assertThat(this.outputCapture.toString()).contains("testatdebug");
+		assertThat(this.outputCapture.toString()).contains("testattrace");
 	}
 
 	@Test
@@ -283,9 +273,8 @@ public class LoggingApplicationListenerTests {
 		this.initializer.initialize(this.context.getEnvironment(),
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
-		assertThat(this.outputCapture.toString(), not(containsString("testatdebug")));
-		assertThat(this.outputCapture.toString(),
-				containsString("Cannot set level: GARBAGE"));
+		assertThat(this.outputCapture.toString()).doesNotContain("testatdebug")
+				.contains("Cannot set level: GARBAGE");
 	}
 
 	@Test
@@ -296,8 +285,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.fatal("testatfatal");
-		assertThat(this.outputCapture.toString(), not(containsString("testatdebug")));
-		assertThat(this.outputCapture.toString(), not(containsString("testatfatal")));
+		assertThat(this.outputCapture.toString()).doesNotContain("testatdebug")
+				.doesNotContain("testatfatal");
 	}
 
 	@Test
@@ -308,8 +297,8 @@ public class LoggingApplicationListenerTests {
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
 		this.logger.fatal("testatfatal");
-		assertThat(this.outputCapture.toString(), not(containsString("testatdebug")));
-		assertThat(this.outputCapture.toString(), not(containsString("testatfatal")));
+		assertThat(this.outputCapture.toString()).doesNotContain("testatdebug")
+				.doesNotContain("testatfatal");
 	}
 
 	@Test
@@ -319,7 +308,7 @@ public class LoggingApplicationListenerTests {
 		this.initializer.initialize(this.context.getEnvironment(),
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
-		assertThat(this.outputCapture.toString(), not(containsString("testatdebug")));
+		assertThat(this.outputCapture.toString()).doesNotContain("testatdebug");
 	}
 
 	@Test
@@ -331,14 +320,14 @@ public class LoggingApplicationListenerTests {
 		this.initializer.initialize(this.context.getEnvironment(),
 				this.context.getClassLoader());
 		this.logger.debug("testatdebug");
-		assertThat(this.outputCapture.toString(), not(containsString("testatdebug")));
+		assertThat(this.outputCapture.toString()).doesNotContain("testatdebug");
 	}
 
 	@Test
 	public void bridgeHandlerLifecycle() throws Exception {
-		assertTrue(bridgeHandlerInstalled());
+		assertThat(bridgeHandlerInstalled()).isTrue();
 		this.initializer.onApplicationEvent(new ContextClosedEvent(this.context));
-		assertFalse(bridgeHandlerInstalled());
+		assertThat(bridgeHandlerInstalled()).isFalse();
 	}
 
 	@Test
@@ -373,7 +362,7 @@ public class LoggingApplicationListenerTests {
 		listener.onApplicationEvent(
 				new ApplicationStartedEvent(new SpringApplication(), NO_ARGS));
 		listener.initialize(this.context.getEnvironment(), this.context.getClassLoader());
-		assertThat(listener.shutdownHook, is(nullValue()));
+		assertThat(listener.shutdownHook).isNull();
 	}
 
 	@Test
@@ -386,10 +375,10 @@ public class LoggingApplicationListenerTests {
 		listener.onApplicationEvent(
 				new ApplicationStartedEvent(new SpringApplication(), NO_ARGS));
 		listener.initialize(this.context.getEnvironment(), this.context.getClassLoader());
-		assertThat(listener.shutdownHook, is(not(nullValue())));
+		assertThat(listener.shutdownHook).isNotNull();
 		listener.shutdownHook.start();
 		assertThat(TestShutdownHandlerLoggingSystem.shutdownLatch.await(30,
-				TimeUnit.SECONDS), is(true));
+				TimeUnit.SECONDS)).isTrue();
 	}
 
 	@Test
@@ -400,9 +389,9 @@ public class LoggingApplicationListenerTests {
 				new ApplicationStartedEvent(this.springApplication, new String[0]));
 		TestCleanupLoggingSystem loggingSystem = (TestCleanupLoggingSystem) ReflectionTestUtils
 				.getField(this.initializer, "loggingSystem");
-		assertThat(loggingSystem.cleanedUp, is(false));
+		assertThat(loggingSystem.cleanedUp).isFalse();
 		this.initializer.onApplicationEvent(new ContextClosedEvent(this.context));
-		assertThat(loggingSystem.cleanedUp, is(true));
+		assertThat(loggingSystem.cleanedUp).isTrue();
 	}
 
 	@Test
@@ -413,13 +402,13 @@ public class LoggingApplicationListenerTests {
 				new ApplicationStartedEvent(this.springApplication, new String[0]));
 		TestCleanupLoggingSystem loggingSystem = (TestCleanupLoggingSystem) ReflectionTestUtils
 				.getField(this.initializer, "loggingSystem");
-		assertThat(loggingSystem.cleanedUp, is(false));
+		assertThat(loggingSystem.cleanedUp).isFalse();
 		GenericApplicationContext childContext = new GenericApplicationContext();
 		childContext.setParent(this.context);
 		this.initializer.onApplicationEvent(new ContextClosedEvent(childContext));
-		assertThat(loggingSystem.cleanedUp, is(false));
+		assertThat(loggingSystem.cleanedUp).isFalse();
 		this.initializer.onApplicationEvent(new ContextClosedEvent(this.context));
-		assertThat(loggingSystem.cleanedUp, is(true));
+		assertThat(loggingSystem.cleanedUp).isTrue();
 		childContext.close();
 	}
 
@@ -431,14 +420,14 @@ public class LoggingApplicationListenerTests {
 				"logging.pattern.file=file", "logging.pattern.level=level");
 		this.initializer.initialize(this.context.getEnvironment(),
 				this.context.getClassLoader());
-		assertThat(System.getProperty("CONSOLE_LOG_PATTERN"), is(equalTo("console")));
-		assertThat(System.getProperty("FILE_LOG_PATTERN"), is(equalTo("file")));
-		assertThat(System.getProperty("LOG_EXCEPTION_CONVERSION_WORD"),
-				is(equalTo("conversion")));
-		assertThat(System.getProperty("LOG_FILE"), is(equalTo("target/log")));
-		assertThat(System.getProperty("LOG_LEVEL_PATTERN"), is(equalTo("level")));
-		assertThat(System.getProperty("LOG_PATH"), is(equalTo("path")));
-		assertThat(System.getProperty("PID"), is(not(nullValue())));
+		assertThat(System.getProperty("CONSOLE_LOG_PATTERN")).isEqualTo("console");
+		assertThat(System.getProperty("FILE_LOG_PATTERN")).isEqualTo("file");
+		assertThat(System.getProperty("LOG_EXCEPTION_CONVERSION_WORD"))
+				.isEqualTo("conversion");
+		assertThat(System.getProperty("LOG_FILE")).isEqualTo("target/log");
+		assertThat(System.getProperty("LOG_LEVEL_PATTERN")).isEqualTo("level");
+		assertThat(System.getProperty("LOG_PATH")).isEqualTo("path");
+		assertThat(System.getProperty("PID")).isNotNull();
 	}
 
 	private boolean bridgeHandlerInstalled() {
@@ -518,11 +507,6 @@ public class LoggingApplicationListenerTests {
 
 		@Override
 		public void beforeInitialize() {
-
-		}
-
-		@Override
-		public void initialize(String configLocation, LogFile logFile) {
 
 		}
 
